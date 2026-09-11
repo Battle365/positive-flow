@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Positive Flow</title>
+<style>
+body{font-family:Arial;max-width:700px;margin:30px auto;padding:20px;background:#f0fff4;color:#173b2d}
+h1{color:#159957}
+textarea,input,button{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;border:1px solid #b7e4c7;border-radius:8px}
+button{background:#159957;color:white;cursor:pointer}
+article{background:white;padding:14px;margin:14px 0;border-radius:10px;box-shadow:0 2px 8px #cde8d5}
+.comments p{margin:6px 0;color:#24734d}
+small{color:#52806a}
+</style>
+</head>
+<body>
+<h1>🌱 Positive Flow</h1>
+<p>Share what is going well or what you hope to accomplish.</p>
+<textarea id="post" placeholder="Write a positive update or future goal..."></textarea>
+<button onclick="addPost()">Share Post</button>
+<main id="feed"></main>
+<script>
+const feed=document.querySelector("#feed");
+function addPost(text){text=text||document.querySelector("#post").value.trim();if(!text)return;const card=document.createElement("article");card.innerHTML=`<b>Positive Flow member</b><small> • today</small><p>${text}</p><input placeholder="Add an encouraging comment..." onkeydown="if(event.key==='Enter')comment(this)"><div class="comments"></div>`;feed.prepend(card);document.querySelector("#post").value="";}
+function comment(input){if(!input.value.trim())return;const item=document.createElement("p");item.textContent="💚 "+input.value;input.nextElementSibling.append(item);input.value="";}
+addPost("I finished my first step toward a healthier routine!");
+addPost("Future goal: learn something new and help someone else do the same.");
+addPost("Today I am grateful for a fresh start.");
+</script>
+</body>
+</html>
