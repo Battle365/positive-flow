@@ -22,11 +22,15 @@ small{color:#52806a}
 <main id="feed"></main>
 <script>
 const feed=document.querySelector("#feed");
-function addPost(text){text=text||document.querySelector("#post").value.trim();if(!text)return;const card=document.createElement("article");card.innerHTML=`<b>Positive Flow member</b><small> • today</small><p>${text}</p><input placeholder="Add an encouraging comment..." onkeydown="if(event.key==='Enter')comment(this)"><div class="comments"></div>`;feed.prepend(card);document.querySelector("#post").value="";}
-function comment(input){if(!input.value.trim())return;const item=document.createElement("p");item.textContent="💚 "+input.value;input.nextElementSibling.append(item);input.value="";}
-addPost("I finished my first step toward a healthier routine!");
-addPost("Future goal: learn something new and help someone else do the same.");
-addPost("Today I am grateful for a fresh start.");
+const SUPABASE_URL="https://qvaxqblpkrolazxbwykn.supabase.co";
+const SUPABASE_KEY=undefined;
+const headers={apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"};
+async function db(path,options){options=options||{};const response=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...options,headers:{...headers,...(options.headers||{}),Prefer:"return=representation"}});if(!response.ok)throw new Error(await response.text());return response.status===204?[]:response.json();}
+async function loadFeed(){feed.innerHTML="";const results=await Promise.all([db("posts?select=*&order=created_at.desc"),db("comments?select=*&order=created_at.asc")]);const posts=results[0],comments=results[1],byPost={};comments.forEach(item=>{if(!byPost[item.post_id])byPost[item.post_id]=[];byPost[item.post_id].push(item);});posts.forEach(post=>renderPost(post,byPost[post.id]||[]));}
+function renderPost(post,comments){const card=document.createElement("article");card.innerHTML="<b></b><small></small><p></p><input placeholder="Add an encouraging comment..."><div class="comments"></div>";card.querySelector("b").textContent=post.author_name;card.querySelector("small").textContent=" • "+new Date(post.created_at).toLocaleDateString();card.querySelector("p").textContent=post.content;const input=card.querySelector("input"),commentsBox=card.querySelector(".comments");input.addEventListener("keydown",event=>{if(event.key==="Enter")comment(input,post.id);});comments.forEach(item=>{const p=document.createElement("p");p.textContent="💚 "+item.content;commentsBox.append(p);});feed.append(card);}
+async function addPost(text){text=text||document.querySelector("#post").value.trim();if(!text)return;await db("posts",{method:"POST",body:JSON.stringify({content:text})});document.querySelector("#post").value="";await loadFeed();}
+async function comment(input,postId){const text=input.value.trim();if(!text)return;await db("comments",{method:"POST",body:JSON.stringify({post_id:postId,content:text})});input.value="";await loadFeed();}
+loadFeed().catch(error=>{feed.innerHTML="<article><p>Could not load Positive Flow right now. Please refresh and try again.</p></article>";console.error(error);});
 </script>
 </body>
 </html>
